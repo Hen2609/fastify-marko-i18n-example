@@ -1,4 +1,4 @@
-const { NODE_ENV = "development", PORT = 3000 } = process.env;
+const { NODE_ENV = "development", PORT = 8090 } = process.env;
 console.time("Start");
 
 let address;

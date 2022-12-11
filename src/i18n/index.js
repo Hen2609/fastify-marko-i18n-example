@@ -12,5 +12,7 @@ const getLocale = typeof document === "object" ? () => window.$i18n : (await imp
       return value(data);
     case "string":
       return tmpl(value, data);
+    default: 
+      return "translation not found"
   }
 }

@@ -3,13 +3,14 @@ import Negotiator from "negotiator";
 import { AsyncLocalStorage } from "async_hooks";
 
 const locales = Object.fromEntries(
-  Object.entries(import.meta.glob("./locales/*.js", { eager: true })).map(
+  Object.entries(import.meta.glob("/src/locales/*.js", { eager: true })).map(
     ([key, value]) => {
-      const [, locale] = key.match(/\.\/locales\/(.+)\.js$/);
+      const [, locale] = key.match(/\/src\/locales\/(.+)\.js$/);
       return [locale, value];
     }
   )
 );
+
 const languages = Object.keys(locales);
 
 /**
@@ -17,9 +18,16 @@ const languages = Object.keys(locales);
  * and stores it in our languageStore.
  */
 const languageStore = new AsyncLocalStorage();
+//captures a lanuage subdomain: ( www.en.test.com || en.test.com ) => lang: en
+const language_subdomain_regex = new RegExp(/(?:www\.)?((?<lang>\w{2,3})\.)?.+/);
 export default plugin(async (app) => {
   app.addHook("onRequest", (request, _reply, done) => {
-    languageStore.run(new Negotiator(request.raw).language(languages), done);
+    const language = request.hostname.match(language_subdomain_regex).groups?.lang;
+    if(language && languages.includes(language)){
+      languageStore.run(language,done)
+    }else {
+      languageStore.run(new Negotiator(request.raw).language(languages), done);
+    }
   });
 });
 
